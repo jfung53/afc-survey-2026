@@ -1,3 +1,15 @@
+# os
+.DS_Store
+
+# Claude Code local worktrees / metadata
+.claude/
+
+# images for reports
+images/
+
+# notes to self
+notes/
+
 # History files
 .Rhistory
 .Rapp.history

@@ -9,6 +9,7 @@ setwd("/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026")
 library(dplyr) # for data management
 library(tidyverse) # for data tidying
 library(ggplot2) # for data visualization
+library(grid) # for arrow() / unit() in geom_segment arrows
 
 # load data (survey responses were cleaned up for analysis and re-exported as a csv)
 # fields with no responses were populated with "9999"
@@ -19,6 +20,12 @@ View(data)
 # made it a variable to calculate percentages
 n_responses <- nrow(data)
 n_responses
+
+# number of respondents for each year of the survey so far
+respondents_by_year <- tibble(
+  year = 2018:2026,
+  n_respondents = c(85, NA, 56, NA, 74, NA, 94, 120, 54)
+)
 
 
 # -----------------------------------
@@ -79,7 +86,17 @@ table(data$degrees.and.certifications)
 # no response: 10 (18.5%)
 # - 9 ("If none, leave blank") + 1  "some college"
 
+# -- GIS/geography/cartography degrees
+# -- lots of people checked off more than one but i only need to know the highest one
+table(data$highest.geo.degree)
+# Bachelors   Masters       PhD
+#         8        20         1
+
+29 / n_responses * 100
+# 53.7%
+
 # respondents who hold any degree: 39
+# includes non-geo degrees
 degree_any <- data |>
   filter(
     str_detect(degrees.and.certifications, "Bachelor") |
@@ -93,51 +110,25 @@ degree_any <- data |>
 degree_any / n_responses * 100
 # 72.2%
 
-# -- highest level attained
-# abbreviation 'geo' means 'cartography/GIS/geography'
+# -- extracting highest level attained for charting
 
-# ------ this section was used to extract strings from the
-# ------ google form results but i ended up making a separate
-# ------ variable for these later on
+degree_by_level <- data |>
+  count(highest.geo.degree) |>
+  mutate(pct = n / n_responses * 100)
 
-# # geo PhD: only 1
-# degree_geo_phd <- data |>
-#   filter(str_detect(degrees.and.certifications, "PhD")) |>
-#   nrow()
+degree_by_level
 
-# # percentage
-# degree_geo_phd / n_responses * 100
-# # 1.9% (one person)
+degree_geo_phd <- degree_by_level |>
+  filter(highest.geo.degree == "PhD") |>
+  pull(n)
 
-# # geo Master's: 20
-# degree_geo_masters <- data |>
-#   filter(
-#     str_detect(degrees.and.certifications, "Master's") &
-#       !str_detect(degrees.and.certifications, "PhD")
-#   ) |>
-#   nrow()
+degree_geo_masters <- degree_by_level |>
+  filter(highest.geo.degree == "Masters") |>
+  pull(n)
 
-# # percentage
-# degree_geo_masters / n_responses * 100
-# # 37%
-
-# # geo Bachelor's: 8
-# degree_geo_bachelors <- data |>
-#   filter(
-#     str_detect(degrees.and.certifications, "Bachelor") &
-#       !str_detect(degrees.and.certifications, "Master's") &
-#       !str_detect(degrees.and.certifications, "PhD")
-#   ) |>
-#   nrow()
-
-# # percentage
-# degree_geo_bachelors / n_responses * 100
-# # 14.8%
-
-# ------ end section -------
-
-# lots of people checked off multiple degrees but i only need to know the highest one
-table(data$highest.geo.degree)
+degree_geo_bachelors <- degree_by_level |>
+  filter(highest.geo.degree == "Bachelors") |>
+  pull(n)
 
 
 # -- taking a look at all the degree combos
@@ -173,8 +164,10 @@ degree_adjacent_combo <- data |>
 degree_adjacent_combo / n_responses * 100
 # total adjacent degree holders (any combo): 14 (25.9%)
 
-# adjacent degree only, no geo-related degree(s): 6 (11.1%)
-6 / n_responses * 100
+# ------ adjacent degree only, no geo-related degree(s): 11 (20.4%)
+# manually counted
+degree_adjacent_no_geo <- 11
+degree_adjacent_no_geo / n_responses * 100
 
 # adjacent degree plus geo-related degree or certification: 10
 
@@ -253,7 +246,7 @@ degree_cert_summary <- tibble(
     degree_geo_phd,
     degree_geo_masters,
     degree_geo_bachelors,
-    11,
+    degree_adjacent_no_geo,
     certificate_only,
     10
   )
@@ -276,15 +269,281 @@ ggplot(
   theme_minimal() +
   theme(legend.position = "none")
 
+# -- chord diagram: overlap between degrees and certifications
+# -- thanks, claude!
+# off-diagonal cells count pairwise overlap between different credentials;
+# diagonal cells count respondents holding that credential exclusively,
+# but are hidden from rendering (link.visible) so exclusive holders show
+# up as empty sector space rather than a self-loop
+
+library(circlize)
+
+cred <- data |>
+  mutate(
+    PhD = highest.geo.degree %in% "PhD",
+    `Master's` = highest.geo.degree %in% "Masters",
+    `Bachelor's` = highest.geo.degree %in% "Bachelors",
+    Adjacent = !is.na(adjacent.degree),
+    Certificate = !is.na(certificate),
+    GISP = !is.na(gisp),
+    `Other cert.` = !is.na(other.certification)
+  ) |>
+  select(
+    PhD,
+    `Master's`,
+    `Bachelor's`,
+    Adjacent,
+    Certificate,
+    GISP,
+    `Other cert.`
+  )
+
+cats <- names(cred)
+n_cat <- length(cats)
+mat <- matrix(0, n_cat, n_cat, dimnames = list(cats, cats))
+n_creds <- rowSums(cred)
+
+for (i in seq_len(n_cat)) {
+  for (j in seq_len(n_cat)) {
+    if (i == j) {
+      mat[i, j] <- sum(cred[[i]] & n_creds == 1)
+    } else {
+      mat[i, j] <- sum(cred[[i]] & cred[[j]])
+    }
+  }
+}
+
+# zero out the redundant lower triangle so chordDiagram() plots the
+# matrix as directed without doubling every edge weight, while still
+# preserving the diagonal values (needed to reserve sector space for
+# exclusive holders; symmetric = TRUE drops self-loop-only sectors,
+# e.g. PhD)
+mat_upper <- mat
+mat_upper[lower.tri(mat_upper)] <- 0
+
+# add an 8th "None" sector for the 10 respondents with no degrees or
+# certificates at all; give it a diagonal value only (no overlaps by
+# definition) so it reserves sector space but stays empty
+mat8 <- matrix(
+  0,
+  n_cat + 1,
+  n_cat + 1,
+  dimnames = list(c(cats, "None"), c(cats, "None"))
+)
+mat8[cats, cats] <- mat_upper
+mat8["None", "None"] <- 10
+
+# hide the diagonal links from rendering, leaving empty arc space for
+# exclusive holders (and the None sector) instead of drawing a self-loop
+vis8 <- mat8 != 0
+diag(vis8) <- FALSE
+
+sector_order <- c(
+  "PhD",
+  "Master's",
+  "Bachelor's",
+  "Adjacent",
+  "Certificate",
+  "GISP",
+  "Other cert.",
+  "None"
+)
+
+circos.clear()
+circos.par(start.degree = 180)
+chordDiagram(
+  mat8,
+  self.link = 1,
+  link.visible = vis8,
+  order = sector_order,
+  annotationTrack = c("name", "grid"),
+  grid.col = c(
+    "PhD" = "#1b9e77",
+    "Master's" = "#1b9e77",
+    "Bachelor's" = "#1b9e77",
+    "Adjacent" = "#d95f02",
+    "Certificate" = "#7570b3",
+    "GISP" = "#7570b3",
+    "Other cert." = "#7570b3",
+    "None" = "grey60"
+  )
+)
+
+# note to self: maybe omit the ticks, too messy
+# custom axis: one tick per two respondents, rather than the default
+# spacing, to keep tick labels legible
+circos.track(
+  track.index = 2,
+  panel.fun = function(x, y) {
+    xlim <- get.cell.meta.data("xlim")
+    sector <- get.cell.meta.data("sector.index")
+    circos.axis(
+      h = "top",
+      major.at = seq(0, xlim[2], by = 2),
+      minor.ticks = 0,
+      labels.cex = 0.4,
+      sector.index = sector
+    )
+  },
+  bg.border = NA
+)
+
+title("Many respondents hold multiple degrees and certifications")
+circos.clear()
+
 # -----------------------------------
 # --- RATES
 # -----------------------------------
 
 # typical hourly rate per year
-
 # rate by gender
+
+# calculate typical hourly rate median for 2026
+
+# exclude "9999" (no response) as missing before taking medians
+rate_2026 <- data |>
+  mutate(rate = na_if(typical.hourly.rate, 9999))
+
+# sanity check: 6 respondents left this field blank
+sum(is.na(rate_2026$rate))
+
+median_all_2026 <- median(rate_2026$rate, na.rm = TRUE)
+median_men_2026 <- median(
+  rate_2026$rate[rate_2026$gender == "Man"],
+  na.rm = TRUE
+)
+median_women_2026 <- median(
+  rate_2026$rate[rate_2026$gender == "Woman"],
+  na.rm = TRUE
+)
+
+median_hourly_rate <- tribble(
+  ~year , ~group  , ~median_hourly_rate ,
+   2018 , "all"   ,                  60 ,
+   2018 , "men"   ,                  68 ,
+   2018 , "women" ,                  50 ,
+   2020 , "all"   ,                  73 ,
+   2020 , "men"   ,                  75 ,
+   2020 , "women" ,                  60 ,
+   2022 , "all"   ,                  65 ,
+   2022 , "men"   ,                  60 ,
+   2022 , "women" ,                  75 ,
+   2024 , "all"   ,                  65 ,
+   2024 , "men"   ,                  65 ,
+   2024 , "women" ,                  60 ,
+   2025 , "all"   ,                  60 ,
+   2025 , "men"   ,                  65 ,
+   2025 , "women" ,                  50
+) |>
+  add_row(year = 2026, group = "all", median_hourly_rate = median_all_2026) |>
+  add_row(year = 2026, group = "men", median_hourly_rate = median_men_2026) |>
+  add_row(
+    year = 2026,
+    group = "women",
+    median_hourly_rate = median_women_2026
+  )
+
+# chart: median hourly rate by year per gender
+survey_years <- respondents_by_year$year
+
+ggplot(
+  median_hourly_rate,
+  aes(x = year, y = median_hourly_rate, color = group)
+) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(
+    breaks = survey_years,
+    labels = \(x) ifelse(x %in% median_hourly_rate$year, x, ""),
+    limits = range(survey_years),
+    expand = expansion(mult = 0.03)
+  ) +
+  labs(
+    title = "Median hourly rate by year",
+    x = NULL,
+    y = "Median hourly rate ($)",
+    color = NULL
+  ) +
+  theme_minimal() +
+  theme(axis.ticks.x = element_line(color = "grey50"))
+
+# typical hourly rate compared to previous year
+
+# scatter plot: typical hourly rate per respondent (thanks, claude!)
+# x-axis order (by this year's rate) stays fixed regardless of change type
+# - arrows show direction of change vs. previous year
+# - no change: keep the (filled) circle
+# - previous.typical.hourly.rate == 9999 (no response): outlined circle
+gender_colors <- setNames(
+  scales::hue_pal()(n_distinct(data$gender)),
+  levels(fct_infreq(data$gender))
+)
+
+# NOTE: when several layers each supply their own filtered subset of the
+# same factor column, ggplot2's discrete position scale compacts levels
+# per layer rather than as one shared union, which silently breaks a
+# consistent left-to-right order across layers. Using a plain numeric
+# rank (shared identically by all layers) avoids that.
+rate_arrows <- rate_2026 |>
+  filter(!is.na(rate)) |>
+  mutate(
+    prev_rate = na_if(previous.typical.hourly.rate, 9999),
+    change_type = case_when(
+      previous.typical.hourly.rate == 9999 ~ "no_prev",
+      rate == prev_rate ~ "same",
+      TRUE ~ "changed"
+    ),
+    rank = rank(rate, ties.method = "first")
+  )
+
+# sanity check: 18 changed, 22 stayed the same, 8 have no previous-year rate
+count(rate_arrows, change_type)
+
+rate_change_plot <- ggplot() +
+  geom_segment(
+    data = filter(rate_arrows, change_type == "changed"),
+    aes(
+      x = rank,
+      y = prev_rate,
+      xend = rank,
+      yend = rate,
+      color = fct_infreq(gender)
+    ),
+    arrow = arrow(length = unit(0.1, "inches"), type = "closed")
+  ) +
+  geom_point(
+    data = filter(rate_arrows, change_type == "same"),
+    aes(x = rank, y = rate, color = fct_infreq(gender))
+  ) +
+  geom_point(
+    data = filter(rate_arrows, change_type == "no_prev"),
+    aes(x = rank, y = rate, color = fct_infreq(gender)),
+    shape = 21,
+    fill = NA
+  ) +
+  scale_color_manual(values = gender_colors) +
+  labs(
+    title = "This year's hourly rate vs last year's",
+    x = "Respondent (ordered by rate, low to high)",
+    y = "Typical hourly rate ($)",
+    color = "Gender"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+rate_change_plot
+
+library(svglite)
+ggsave(
+  "hourly-rate-change-smallm.svg",
+  plot = rate_change_plot,
+  device = "svg",
+  width = 10,
+  height = 5
+)
+
+# rate by education
 # rate by experience
-# rate vs education
 
 # perception of fair pay
 # previous survey influence

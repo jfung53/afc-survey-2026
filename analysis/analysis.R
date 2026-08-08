@@ -10,6 +10,8 @@ library(dplyr) # for data management
 library(tidyverse) # for data tidying
 library(ggplot2) # for data visualization
 library(grid) # for arrow() / unit() in geom_segment arrows
+library(svglite) # for saving svgs
+library(circlize) # for chord diagrams
 
 # load data (survey responses were cleaned up for analysis and re-exported as a csv)
 # fields with no responses were populated with "9999"
@@ -276,8 +278,6 @@ ggplot(
 # but are hidden from rendering (link.visible) so exclusive holders show
 # up as empty sector space rather than a self-loop
 
-library(circlize)
-
 cred <- data |>
   mutate(
     PhD = highest.geo.degree %in% "PhD",
@@ -372,21 +372,21 @@ chordDiagram(
 # note to self: maybe omit the ticks, too messy
 # custom axis: one tick per two respondents, rather than the default
 # spacing, to keep tick labels legible
-circos.track(
-  track.index = 2,
-  panel.fun = function(x, y) {
-    xlim <- get.cell.meta.data("xlim")
-    sector <- get.cell.meta.data("sector.index")
-    circos.axis(
-      h = "top",
-      major.at = seq(0, xlim[2], by = 2),
-      minor.ticks = 0,
-      labels.cex = 0.4,
-      sector.index = sector
-    )
-  },
-  bg.border = NA
-)
+# circos.track(
+#   track.index = 2,
+#   panel.fun = function(x, y) {
+#     xlim <- get.cell.meta.data("xlim")
+#     sector <- get.cell.meta.data("sector.index")
+#     circos.axis(
+#       h = "top",
+#       major.at = seq(0, xlim[2], by = 2),
+#       minor.ticks = 0,
+#       labels.cex = 0.4,
+#       sector.index = sector
+#     )
+#   },
+#   bg.border = NA
+# )
 
 title("Many respondents hold multiple degrees and certifications")
 circos.clear()
@@ -531,11 +531,12 @@ rate_change_plot <- ggplot() +
   theme_minimal() +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
+# view scatter plot
 rate_change_plot
 
-library(svglite)
+# save as svg
 ggsave(
-  "hourly-rate-change-smallm.svg",
+  "hourly-rate-change.svg",
   plot = rate_change_plot,
   device = "svg",
   width = 10,
@@ -543,13 +544,355 @@ ggsave(
 )
 
 # rate by education
+# mutually exclusive education categories, similar to the earlier
+# degree/certification breakdown: highest geo degree takes priority,
+# then adjacent degree, then certificate(s) only, then no response
+# excludes the 6 respondents missing this year's rate
+rate_by_education <- rate_2026 |>
+  filter(!is.na(rate)) |>
+  mutate(
+    education = case_when(
+      highest.geo.degree == "PhD" ~ "PhD",
+      highest.geo.degree == "Masters" ~ "Masters",
+      highest.geo.degree == "Bachelors" ~ "Bachelors",
+      !is.na(adjacent.degree) ~ "Adjacent",
+      !is.na(certificate) | !is.na(gisp) | !is.na(other.certification) ~
+        "Certificates only",
+      TRUE ~ "No response"
+    ),
+    education = factor(
+      education,
+      levels = c(
+        "PhD",
+        "Masters",
+        "Bachelors",
+        "Adjacent",
+        "Certificates only",
+        "No response"
+      )
+    )
+  )
+
+# sanity check: counts should sum to 48 (54 minus 6 missing rate)
+count(rate_by_education, education)
+
+rate_by_education_plot <- ggplot(
+  rate_by_education,
+  aes(x = education, y = rate)
+) +
+  geom_jitter(width = 0.1, height = 0) +
+  geom_hline(
+    data = rate_by_education |>
+      summarise(median_rate = median(rate), .by = education),
+    aes(yintercept = median_rate),
+    color = "steelblue",
+    linetype = "dashed"
+  ) +
+  facet_wrap(~education, scales = "free_x", nrow = 1) +
+  labs(
+    title = "Typical hourly rate by education",
+    subtitle = "Dashed line: median rate for that education category",
+    x = NULL,
+    y = "Typical hourly rate ($)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+rate_by_education_plot
+
 # rate by experience
+# excludes the 6 respondents missing this year's rate
+rate_by_experience <- rate_2026 |>
+  filter(!is.na(rate)) |>
+  mutate(
+    experience = case_when(
+      experience.level == 1 ~ "<5 yrs",
+      experience.level == 2 ~ "5-10 yrs",
+      experience.level == 3 ~ "10-20 yrs",
+      experience.level == 4 ~ "20+ yrs",
+      TRUE ~ "No response"
+    ),
+    experience = factor(
+      experience,
+      levels = c("<5 yrs", "5-10 yrs", "10-20 yrs", "20+ yrs", "No response")
+    )
+  )
+
+# sanity check: counts should sum to 48 (54 minus 6 missing rate)
+count(rate_by_experience, experience)
+
+rate_by_experience_plot <- ggplot(
+  rate_by_experience,
+  aes(x = experience, y = rate)
+) +
+  geom_jitter(width = 0.1, height = 0) +
+  geom_hline(
+    data = rate_by_experience |>
+      summarise(median_rate = median(rate), .by = experience),
+    aes(yintercept = median_rate),
+    color = "steelblue",
+    linetype = "dashed"
+  ) +
+  facet_wrap(~experience, scales = "free_x", nrow = 1) +
+  labs(
+    title = "Typical hourly rate by experience level",
+    subtitle = "Dashed line: median rate for that experience level",
+    x = NULL,
+    y = "Typical hourly rate ($)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+rate_by_experience_plot
+
 
 # perception of fair pay
-# previous survey influence
+table(data$perception.of.fair.pay)
+
+# 4 Never: 1
+# 3 Rarely: 9
+# 2 Some of the time: 20
+# 1 Most or all of the time: 22
+# 9999 (no response): 2
+
+fair_pay <- data |>
+  mutate(
+    fair_pay = case_when(
+      perception.of.fair.pay == 1 ~ "Most or all of the time",
+      perception.of.fair.pay == 2 ~ "Some of the time",
+      perception.of.fair.pay == 3 ~ "Rarely",
+      perception.of.fair.pay == 4 ~ "Never",
+      TRUE ~ "No response"
+    ),
+    fair_pay = factor(
+      fair_pay,
+      levels = c(
+        "Most or all of the time",
+        "Some of the time",
+        "Rarely",
+        "Never",
+        "No response"
+      )
+    )
+  )
+
+ggplot(fair_pay, aes(x = fair_pay)) +
+  geom_bar() +
+  labs(
+    title = "Perception of fair pay",
+    x = NULL,
+    y = "# respondents"
+  ) +
+  theme_minimal()
+
+# typical hourly rate vs. perception of fair pay
+# excludes respondents missing this year's rate (6) or a fair pay
+# response (2, folded into "No response" upstream but dropped here
+# since none of them also reported a rate)
+fair_pay_rate <- fair_pay |>
+  mutate(rate = na_if(typical.hourly.rate, 9999)) |>
+  filter(!is.na(rate))
+
+# sanity check: 21/19/7/1 across most-of-the-time/some/rarely/never
+count(fair_pay_rate, fair_pay)
+
+ggplot(fair_pay_rate, aes(x = fair_pay, y = rate)) +
+  geom_jitter(width = 0.1, height = 0) +
+  geom_hline(
+    data = fair_pay_rate |>
+      summarise(median_rate = median(rate), .by = fair_pay),
+    aes(yintercept = median_rate),
+    color = "steelblue",
+    linetype = "dashed"
+  ) +
+  facet_wrap(~fair_pay, scales = "free_x", nrow = 1) +
+  labs(
+    title = "Typical hourly rate by perception of fair pay",
+    subtitle = "Dashed line: median rate for that response",
+    x = NULL,
+    y = "Typical hourly rate ($)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+# perception of fair pay by gender
+# uses % within each gender rather than raw counts, since gender group
+# sizes are very unequal (Man 34, Woman 14); excludes the 2 respondents
+# with no gender response and the 4 non-binary respondents (too few to
+# compare reliably)
+fair_pay_by_gender <- fair_pay |>
+  filter(!gender %in% c("9999", "Non-binary")) |>
+  count(gender, fair_pay) |>
+  group_by(gender) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup()
+
+fair_pay_by_gender
+
+ggplot(
+  fair_pay_by_gender,
+  aes(x = fair_pay, y = pct, fill = fct_infreq(gender, w = n))
+) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = gender_colors) +
+  labs(
+    title = "Perception of fair pay by gender",
+    subtitle = "% within each gender (Man, Woman only)",
+    x = NULL,
+    y = "% of respondents",
+    fill = "Gender"
+  ) +
+  theme_minimal()
+
+# previous survey influence on business practices or rates
+table(data$influence.of.previous.surveys)
+# yes: 23
+# no: 13
+# had not seen previous: 17
+# no response: 1
+
+influence <- data |>
+  mutate(
+    influence = case_when(
+      influence.of.previous.surveys == "Yes" ~ "Yes",
+      influence.of.previous.surveys == "No" ~ "No",
+      influence.of.previous.surveys ==
+        "I haven't seen any previous survey results" ~
+        "Haven't seen previous results",
+      TRUE ~ "No response"
+    ),
+    influence = factor(
+      influence,
+      levels = c("Yes", "No", "Haven't seen previous results", "No response")
+    )
+  )
+
+ggplot(influence, aes(x = influence)) +
+  geom_bar() +
+  labs(
+    title = "Influence of previous survey results",
+    x = NULL,
+    y = "# respondents"
+  ) +
+  theme_minimal()
+
 # dependence on freelance
+table(data$dependence.on.freelance, useNA = "always")
+
+# 1 I depended on it completely; freelance mapping was necessary for my survival
+# -- respondents: 17
+# 2 I depended on it substantially; it would have been possible, but challenging, to survive without my freelance income
+# -- respondents: 4
+# 3 I depended on it somewhat; it would not have been difficult to survive without freelance income, but it helped make it easier
+# -- respondents: 11
+# 4 I did not depend on it at all; mapping provided surplus income
+# -- respondents: 20
+# 9999 no response: 2
+
+# excludes the 2 respondents with no response
+dependence <- data |>
+  filter(dependence.on.freelance != 9999) |>
+  mutate(
+    dependence = case_when(
+      dependence.on.freelance == 1 ~ "Completely",
+      dependence.on.freelance == 2 ~ "Substantially",
+      dependence.on.freelance == 3 ~ "Somewhat",
+      dependence.on.freelance == 4 ~ "Not at all"
+    ),
+    dependence = factor(
+      dependence,
+      levels = c("Not at all", "Somewhat", "Substantially", "Completely")
+    )
+  )
+
+ggplot(dependence, aes(x = dependence)) +
+  geom_bar() +
+  labs(
+    title = "Dependence on freelance income",
+    x = NULL,
+    y = "# respondents"
+  ) +
+  theme_minimal()
+
 # - typical hourly rate vs level of dependence
+# excludes the 2 respondents with no dependence response (via
+# `dependence`, already filtered) and the 6 missing this year's rate
+dependence_rate <- dependence |>
+  mutate(rate = na_if(typical.hourly.rate, 9999)) |>
+  filter(!is.na(rate))
+
+# sanity check: 17/10/4/17 across not at all/somewhat/substantially/completely
+count(dependence_rate, dependence)
+
+ggplot(dependence_rate, aes(x = dependence, y = rate)) +
+  geom_jitter(width = 0.1, height = 0) +
+  geom_hline(
+    data = dependence_rate |>
+      summarise(median_rate = median(rate), .by = dependence),
+    aes(yintercept = median_rate),
+    color = "steelblue",
+    linetype = "dashed"
+  ) +
+  facet_wrap(~dependence, scales = "free_x", nrow = 1) +
+  labs(
+    title = "Typical hourly rate by dependence on freelance income",
+    subtitle = "Dashed line: median rate for that response",
+    x = NULL,
+    y = "Typical hourly rate ($)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+# billing method: flat rate vs hourly
+
 # - flat rate vs hourly by level of dependence
+# hourly.or.flat.rate: "Do you charge an hourly rate or a flat rate for
+# your freelance cartography work?"
+# 1 = always/almost always hourly,
+# 5 = always/almost always flat rate)
+billing_by_dependence <- dependence |>
+  filter(hourly.or.flat.rate != 9999) |>
+  mutate(
+    billing = case_when(
+      hourly.or.flat.rate == 1 ~ "Always/almost always hourly",
+      hourly.or.flat.rate == 2 ~ "Usually hourly",
+      hourly.or.flat.rate == 3 ~ "About equally likely",
+      hourly.or.flat.rate == 4 ~ "Usually flat rate",
+      hourly.or.flat.rate == 5 ~ "Always/almost always flat rate"
+    ),
+    billing = factor(
+      billing,
+      levels = c(
+        "Always/almost always hourly",
+        "Usually hourly",
+        "About equally likely",
+        "Usually flat rate",
+        "Always/almost always flat rate"
+      )
+    )
+  ) |>
+  count(dependence, billing) |>
+  group_by(dependence) |>
+  mutate(pct = n / sum(n) * 100) |>
+  ungroup()
+
+billing_by_dependence
+
+# this chart doesn't show any clear patterns, it's kind of all over the place,
+# probably because of the small number of respondents.
+# not sure if we should use it?
+ggplot(billing_by_dependence, aes(x = dependence, y = billing, fill = pct)) +
+  geom_tile() +
+  geom_text(aes(label = round(pct)), color = "white", size = 3.5) +
+  scale_fill_gradient(low = "grey90", high = "steelblue") +
+  labs(
+    title = "Billing method by dependence on freelance income",
+    subtitle = "% within each dependence level",
+    x = NULL,
+    y = NULL,
+    fill = "%"
+  ) +
+  theme_minimal()
 
 # -----------------------------------
 # --- PROJECT TYPES

@@ -2,7 +2,9 @@
 # AFC 2026 Annual Survey Analysis — rates, fairness, dependence, billing
 # -----------------------------------
 
-source("/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/analysis/00-setup.R")
+source(
+  "/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/analysis/00-setup.R"
+)
 
 # -----------------------------------
 # --- RATES
@@ -59,7 +61,7 @@ median_hourly_rate <- tribble(
 # chart: median hourly rate by year per gender
 survey_years <- respondents_by_year$year
 
-ggplot(
+rate_by_survey_year_plot <- ggplot(
   median_hourly_rate,
   aes(x = year, y = median_hourly_rate, color = group)
 ) +
@@ -79,6 +81,15 @@ ggplot(
   ) +
   theme_minimal() +
   theme(axis.ticks.x = element_line(color = "grey50"))
+
+rate_by_survey_year_plot
+
+ggsave(
+  "images/rate_by_survey_year.svg",
+  plot = rate_by_survey_year_plot,
+  width = 6,
+  height = 4
+)
 
 # typical hourly rate compared to previous year
 

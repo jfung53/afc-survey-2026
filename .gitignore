@@ -4,6 +4,9 @@
 # Claude Code local worktrees / metadata
 .claude/
 
+# Posit assistant
+.posit
+
 # images for reports
 images/
 

@@ -2,7 +2,9 @@
 # AFC 2026 Annual Survey Analysis — demographics
 # -----------------------------------
 
-source("/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/analysis/00-setup.R")
+source(
+  "/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/analysis/00-setup.R"
+)
 
 # -----------------------------------
 # --- DEMOGRAPHICS
@@ -15,7 +17,10 @@ table(data$gender)
 #    2         34          4         14
 
 # chart of gender breakdown
-ggplot(data, aes(x = fct_infreq(gender), fill = fct_infreq(gender))) +
+gender_distribution_plot <- ggplot(
+  data,
+  aes(x = fct_infreq(gender), fill = fct_infreq(gender))
+) +
   geom_bar() +
   labs(
     title = "Gender of respondents",
@@ -25,6 +30,14 @@ ggplot(data, aes(x = fct_infreq(gender), fill = fct_infreq(gender))) +
   ) +
   theme_minimal() +
   theme(legend.position = "none")
+
+# save as svg
+ggsave(
+  filename = "images/gender_distribution.svg",
+  plot = gender_distribution_plot,
+  width = 6,
+  height = 4
+)
 
 
 # --- EXPERIENCE ---------------------
@@ -45,7 +58,7 @@ xp <- table(data$experience.level)
 xp_labels <- c("<5", "5-10", "10-20", "20+", "no response")
 
 # chart
-ggplot(
+experience_plot <- ggplot(
   data,
   aes(x = factor(experience.level), fill = factor(experience.level))
 ) +
@@ -55,6 +68,13 @@ ggplot(
   theme_minimal() +
   theme(legend.position = "none")
 
+# save as svg
+ggsave(
+  filename = "images/experience.svg",
+  plot = experience_plot,
+  width = 6,
+  height = 4
+)
 
 # --- DEGREES AND CERTIFICATIONS ------------------
 
@@ -68,10 +88,15 @@ table(data$highest.geo.degree)
 # Bachelors   Masters       PhD
 #         8        20         1
 
-29 / n_responses * 100
+# sum of all geo degree holders
+geo_degree_holders <- sum(!is.na(data$highest.geo.degree))
+
+geo_degree_holders
+# 29
+geo_degree_holders / n_responses * 100
 # 53.7%
 
-# respondents who hold any degree: 39
+# respondents who hold any degree
 # includes non-geo degrees
 degree_any <- data |>
   filter(
@@ -82,17 +107,25 @@ degree_any <- data |>
   ) |>
   nrow()
 
-# percentage
+degree_any
+# 39
 degree_any / n_responses * 100
 # 72.2%
 
 # -- extracting highest level attained for charting
+# -- GIS/geography/cartography degrees
 
+# includes NA
 degree_by_level <- data |>
   count(highest.geo.degree) |>
   mutate(pct = n / n_responses * 100)
 
 degree_by_level
+# highest.geo.degree  n       pct
+#          Bachelors  8 14.814815
+#            Masters 20 37.037037
+#                PhD  1  1.851852
+#               <NA> 25 46.296296
 
 degree_geo_phd <- degree_by_level |>
   filter(highest.geo.degree == "PhD") |>
@@ -107,7 +140,7 @@ degree_geo_bachelors <- degree_by_level |>
   pull(n)
 
 
-# -- taking a look at all the degree combos
+# -- just taking a look at all the degree combos
 data |>
   filter(
     str_detect(degrees.and.certifications, "Bachelor") |
@@ -117,8 +150,9 @@ data |>
   ) |>
   count(degrees.and.certifications)
 
-# -- anyone with a map-adjacent degree
+# -- counting anyone with a map-adjacent degree
 # e.g. geology, environmental science, visual arts, graphic design
+# looks like there's lots of overlaps
 
 data |>
   filter(str_detect(degrees.and.certifications, "Adjacent")) |>
@@ -137,17 +171,19 @@ degree_adjacent_combo <- data |>
   filter(str_detect(degrees.and.certifications, "Adjacent")) |>
   nrow()
 
+degree_adjacent_combo
+# 14
 degree_adjacent_combo / n_responses * 100
-# total adjacent degree holders (any combo): 14 (25.9%)
+# total adjacent degree holders (any combo): 25.9%
 
-# ------ adjacent degree only, no geo-related degree(s): 11 (20.4%)
+# ------ adjacent degree ONLY, no geo-related degree(s): 11 (20.4%)
 # manually counted
 degree_adjacent_no_geo <- 11
 degree_adjacent_no_geo / n_responses * 100
 
-# adjacent degree plus geo-related degree or certification: 10
+# ------ adjacent degree PLUS geo-related degree or certification: 10
 
-# certificate(s) only, no degrees (total): 4
+# certificate(s) ONLY, no degrees (total): 4
 certificate_only <- data |>
   filter(
     (str_detect(degrees.and.certifications, "Certificate") |
@@ -161,6 +197,8 @@ certificate_only <- data |>
   ) |>
   nrow()
 
+certificate_only
+# 4
 certificate_only / n_responses * 100
 # 7.4%
 
@@ -178,6 +216,8 @@ degree_only <- data |>
   ) |>
   nrow()
 
+degree_only
+# 22
 degree_only / n_responses * 100
 # 40.7%
 
@@ -195,6 +235,8 @@ degree_plus_certificate <- data |>
   ) |>
   nrow()
 
+degree_plus_certificate
+# 17
 degree_plus_certificate / n_responses * 100
 # 31.5%
 
@@ -208,6 +250,15 @@ degree_plus_certificate / n_responses * 100
 #
 # one person said "computer science", i added that as a geo-adjacent degree
 # one person said "some college", they were added to "none"
+
+# everyone not accounted for by the buckets above falls into
+# none/no response
+degree_none <- n_responses -
+  (degree_geo_phd +
+    degree_geo_masters +
+    degree_geo_bachelors +
+    degree_adjacent_no_geo +
+    certificate_only)
 
 degree_cert_summary <- tibble(
   category = c(
@@ -224,7 +275,7 @@ degree_cert_summary <- tibble(
     degree_geo_bachelors,
     degree_adjacent_no_geo,
     certificate_only,
-    10
+    degree_none
   )
 ) |>
   mutate(category = factor(category, levels = category))
@@ -232,7 +283,7 @@ degree_cert_summary <- tibble(
 # sanity check: should equal n_responses (54)
 sum(degree_cert_summary$n)
 
-ggplot(
+degrees_and_certs_plot <- ggplot(
   degree_cert_summary,
   aes(x = n, y = fct_rev(category), fill = fct_rev(category))
 ) +
@@ -245,12 +296,14 @@ ggplot(
   theme_minimal() +
   theme(legend.position = "none")
 
-# -- chord diagram: overlap between degrees and certifications
-# -- thanks, claude!
-# off-diagonal cells count pairwise overlap between different credentials;
-# diagonal cells count respondents holding that credential exclusively,
-# but are hidden from rendering (link.visible) so exclusive holders show
-# up as empty sector space rather than a self-loop
+ggsave(
+  "images/degrees_and_certs_plot.svg",
+  plot = degrees_and_certs_plot,
+  width = 6,
+  height = 4
+)
+
+# -----  chord diagram: overlap between degrees and certifications
 
 cred <- data |>
   mutate(
@@ -272,11 +325,16 @@ cred <- data |>
     `Other cert.`
   )
 
+# get credential names from above
 cats <- names(cred)
+# number of categories to use in matrix
 n_cat <- length(cats)
+# initialize credential co-occurence matrix
 mat <- matrix(0, n_cat, n_cat, dimnames = list(cats, cats))
+# count number of credentials each person holds
 n_creds <- rowSums(cred)
 
+# fill in the matrix
 for (i in seq_len(n_cat)) {
   for (j in seq_len(n_cat)) {
     if (i == j) {
@@ -287,11 +345,8 @@ for (i in seq_len(n_cat)) {
   }
 }
 
-# zero out the redundant lower triangle so chordDiagram() plots the
-# matrix as directed without doubling every edge weight, while still
-# preserving the diagonal values (needed to reserve sector space for
-# exclusive holders; symmetric = TRUE drops self-loop-only sectors,
-# e.g. PhD)
+# zero out redundant lower triangle of the matrix to avoid double counting
+# in the chord diagram
 mat_upper <- mat
 mat_upper[lower.tri(mat_upper)] <- 0
 
@@ -323,44 +378,59 @@ sector_order <- c(
   "None"
 )
 
-circos.clear()
-circos.par(start.degree = 180)
-chordDiagram(
-  mat8,
-  self.link = 1,
-  link.visible = vis8,
-  order = sector_order,
-  annotationTrack = c("name", "grid"),
-  grid.col = c(
-    "PhD" = "#1b9e77",
-    "Master's" = "#1b9e77",
-    "Bachelor's" = "#1b9e77",
-    "Adjacent" = "#d95f02",
-    "Certificate" = "#7570b3",
-    "GISP" = "#7570b3",
-    "Other cert." = "#7570b3",
-    "None" = "grey60"
+# chordDiagram() is base graphics, not a ggplot object -- there's no plot
+# object to hand to ggsave() after the fact, it just draws straight to
+# whatever device is currently active. wrapping the drawing steps in a
+# function lets us call it once for the Plots pane and once more with an
+# svg device active, without duplicating the drawing code
+draw_degree_cert_chord <- function() {
+  circos.clear()
+  circos.par(start.degree = 180)
+  chordDiagram(
+    mat8,
+    self.link = 1,
+    link.visible = vis8,
+    order = sector_order,
+    annotationTrack = c("name", "grid"),
+    grid.col = c(
+      "PhD" = "#1b9e77",
+      "Master's" = "#1b9e77",
+      "Bachelor's" = "#1b9e77",
+      "Adjacent" = "#d95f02",
+      "Certificate" = "#7570b3",
+      "GISP" = "#7570b3",
+      "Other cert." = "#7570b3",
+      "None" = "grey60"
+    )
   )
-)
 
-# note to self: maybe omit the ticks, too messy
-# custom axis: one tick per two respondents, rather than the default
-# spacing, to keep tick labels legible
-# circos.track(
-#   track.index = 2,
-#   panel.fun = function(x, y) {
-#     xlim <- get.cell.meta.data("xlim")
-#     sector <- get.cell.meta.data("sector.index")
-#     circos.axis(
-#       h = "top",
-#       major.at = seq(0, xlim[2], by = 2),
-#       minor.ticks = 0,
-#       labels.cex = 0.4,
-#       sector.index = sector
-#     )
-#   },
-#   bg.border = NA
-# )
+  # note to self: maybe omit the ticks, too messy
+  # custom axis: one tick per two respondents, rather than the default
+  # spacing, to keep tick labels legible
+  # circos.track(
+  #   track.index = 2,
+  #   panel.fun = function(x, y) {
+  #     xlim <- get.cell.meta.data("xlim")
+  #     sector <- get.cell.meta.data("sector.index")
+  #     circos.axis(
+  #       h = "top",
+  #       major.at = seq(0, xlim[2], by = 2),
+  #       minor.ticks = 0,
+  #       labels.cex = 0.4,
+  #       sector.index = sector
+  #     )
+  #   },
+  #   bg.border = NA
+  # )
 
-title("Many respondents hold multiple degrees and certifications")
-circos.clear()
+  title("Many respondents hold multiple degrees and certifications")
+  circos.clear()
+}
+
+# draw to the plot pane
+draw_degree_cert_chord()
+
+# save as svg
+svglite("images/degree_cert_chord.svg", width = 7, height = 7)
+draw_degree_cert_chord()
+dev.off()

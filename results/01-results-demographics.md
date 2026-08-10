@@ -59,6 +59,10 @@ Total number of respondents
 
 - one person said "some college", they were added to "none"
 
+
+
+![degrees and certification holders chart](../images/degrees_and_certs_plot.svg)
+
 ---
 
 ### Respondents who hold any degree
@@ -101,17 +105,7 @@ Collapsed to highest level obtained
 
 ---
 
-### More charts
 
----
-
-![degrees and certification holders chart](../images/degrees_and_certs_plot.svg)
-
-
-
----
-
-This chord diagram shows the number of respondents, not percentages.
 
 
 

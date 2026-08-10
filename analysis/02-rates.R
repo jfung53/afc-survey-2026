@@ -58,6 +58,13 @@ median_hourly_rate <- tribble(
     median_hourly_rate = median_women_2026
   )
 
+# markdown table: median hourly rate by year, all/men/women
+median_hourly_rate_table <- median_hourly_rate |>
+  pivot_wider(names_from = group, values_from = median_hourly_rate) |>
+  rename(Year = year, All = all, Men = men, Women = women)
+
+cat(knitr::kable(median_hourly_rate_table, format = "pipe"), sep = "\n")
+
 # chart: median hourly rate by year per gender
 survey_years <- respondents_by_year$year
 
@@ -224,6 +231,14 @@ rate_by_education_plot <- ggplot(
 
 rate_by_education_plot
 
+# save as svg
+ggsave(
+  "images/rate_by_education.svg",
+  plot = rate_by_education_plot,
+  width = 6,
+  height = 4
+)
+
 # rate by experience
 # excludes the 6 respondents missing this year's rate
 rate_by_experience <- rate_2026 |>
@@ -269,6 +284,14 @@ rate_by_experience_plot <- ggplot(
 
 rate_by_experience_plot
 
+# save as svg
+ggsave(
+  "images/rate_by_experience.svg",
+  plot = rate_by_experience_plot,
+  width = 6,
+  height = 4
+)
+
 
 # perception of fair pay
 table(data$perception.of.fair.pay)
@@ -300,7 +323,7 @@ fair_pay <- data |>
     )
   )
 
-ggplot(fair_pay, aes(x = fair_pay)) +
+fair_pay_plot <- ggplot(fair_pay, aes(x = fair_pay)) +
   geom_bar() +
   labs(
     title = "Perception of fair pay",
@@ -308,6 +331,16 @@ ggplot(fair_pay, aes(x = fair_pay)) +
     y = "# respondents"
   ) +
   theme_minimal()
+
+fair_pay_plot
+
+# save as svg
+ggsave(
+  "images/fair_pay.svg",
+  plot = fair_pay_plot,
+  width = 6,
+  height = 4
+)
 
 # typical hourly rate vs. perception of fair pay
 # excludes respondents missing this year's rate (6) or a fair pay
@@ -320,7 +353,7 @@ fair_pay_rate <- fair_pay |>
 # sanity check: 21/19/7/1 across most-of-the-time/some/rarely/never
 count(fair_pay_rate, fair_pay)
 
-ggplot(fair_pay_rate, aes(x = fair_pay, y = rate)) +
+fair_pay_rate_plot <- ggplot(fair_pay_rate, aes(x = fair_pay, y = rate)) +
   geom_jitter(width = 0.1, height = 0) +
   geom_hline(
     data = fair_pay_rate |>
@@ -339,6 +372,16 @@ ggplot(fair_pay_rate, aes(x = fair_pay, y = rate)) +
   theme_minimal() +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
+fair_pay_rate_plot
+
+# save as svg
+ggsave(
+  "images/fair_pay_rate.svg",
+  plot = fair_pay_rate_plot,
+  width = 6,
+  height = 4
+)
+
 # perception of fair pay by gender
 # uses % within each gender rather than raw counts, since gender group
 # sizes are very unequal (Man 34, Woman 14); excludes the 2 respondents
@@ -353,7 +396,7 @@ fair_pay_by_gender <- fair_pay |>
 
 fair_pay_by_gender
 
-ggplot(
+fair_pay_by_gender_plot <- ggplot(
   fair_pay_by_gender,
   aes(x = fair_pay, y = pct, fill = fct_infreq(gender, w = n))
 ) +
@@ -367,6 +410,16 @@ ggplot(
     fill = "Gender"
   ) +
   theme_minimal()
+
+fair_pay_by_gender_plot
+
+# save as svg
+ggsave(
+  "images/fair_pay_by_gender.svg",
+  plot = fair_pay_by_gender_plot,
+  width = 6,
+  height = 4
+)
 
 # previous survey influence on business practices or rates
 table(data$influence.of.previous.surveys)
@@ -391,7 +444,7 @@ influence <- data |>
     )
   )
 
-ggplot(influence, aes(x = influence)) +
+influence_plot <- ggplot(influence, aes(x = influence)) +
   geom_bar() +
   labs(
     title = "Influence of previous survey results",
@@ -399,6 +452,16 @@ ggplot(influence, aes(x = influence)) +
     y = "# respondents"
   ) +
   theme_minimal()
+
+influence_plot
+
+# save as svg
+ggsave(
+  "images/influence.svg",
+  plot = influence_plot,
+  width = 6,
+  height = 4
+)
 
 # dependence on freelance
 table(data$dependence.on.freelance, useNA = "always")
@@ -429,7 +492,7 @@ dependence <- data |>
     )
   )
 
-ggplot(dependence, aes(x = dependence)) +
+dependence_plot <- ggplot(dependence, aes(x = dependence)) +
   geom_bar() +
   labs(
     title = "Dependence on freelance income",
@@ -437,6 +500,16 @@ ggplot(dependence, aes(x = dependence)) +
     y = "# respondents"
   ) +
   theme_minimal()
+
+dependence_plot
+
+# save as svg
+ggsave(
+  "images/dependence.svg",
+  plot = dependence_plot,
+  width = 6,
+  height = 4
+)
 
 # - typical hourly rate vs level of dependence
 # excludes the 2 respondents with no dependence response (via
@@ -448,7 +521,7 @@ dependence_rate <- dependence |>
 # sanity check: 17/10/4/17 across not at all/somewhat/substantially/completely
 count(dependence_rate, dependence)
 
-ggplot(dependence_rate, aes(x = dependence, y = rate)) +
+dependence_rate_plot <- ggplot(dependence_rate, aes(x = dependence, y = rate)) +
   geom_jitter(width = 0.1, height = 0) +
   geom_hline(
     data = dependence_rate |>
@@ -466,6 +539,15 @@ ggplot(dependence_rate, aes(x = dependence, y = rate)) +
   ) +
   theme_minimal() +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+dependence_rate_plot
+
+ggsave(
+  "images/dependence_rate.png",
+  plot = dependence_rate_plot,
+  width = 6,
+  height = 4
+)
 
 # billing method: flat rate vs hourly
 
@@ -501,7 +583,7 @@ billing_summary <- billing |>
   count(billing) |>
   mutate(pct = n / sum(n) * 100)
 
-ggplot(billing_summary, aes(x = pct, y = "", fill = billing)) +
+billing_plot <- ggplot(billing_summary, aes(x = pct, y = "", fill = billing)) +
   geom_col() +
   geom_text(
     aes(label = paste0(n, "\n", round(pct), "%")),
@@ -518,6 +600,15 @@ ggplot(billing_summary, aes(x = pct, y = "", fill = billing)) +
   ) +
   theme_minimal() +
   theme(axis.text.y = element_blank())
+
+billing_plot
+
+ggsave(
+  "images/billing_method.svg",
+  plot = billing_plot,
+  width = 12,
+  height = 4
+)
 
 # - flat rate vs hourly by level of dependence
 # hourly.or.flat.rate: "Do you charge an hourly rate or a flat rate for
@@ -555,7 +646,10 @@ billing_by_dependence
 # this chart doesn't show any clear patterns, it's kind of all over the place,
 # probably because of the small number of respondents.
 # not sure if we should use it?
-ggplot(billing_by_dependence, aes(x = dependence, y = billing, fill = pct)) +
+billing_by_dependence <- ggplot(
+  billing_by_dependence,
+  aes(x = dependence, y = billing, fill = pct)
+) +
   geom_tile() +
   geom_text(aes(label = round(pct)), color = "white", size = 3.5) +
   scale_fill_gradient(low = "grey90", high = "steelblue") +
@@ -567,3 +661,12 @@ ggplot(billing_by_dependence, aes(x = dependence, y = billing, fill = pct)) +
     fill = "%"
   ) +
   theme_minimal()
+
+billing_by_dependence
+
+ggsave(
+  "images/billing_by_dependence.svg",
+  plot = billing_by_dependence,
+  width = 8,
+  height = 6
+)

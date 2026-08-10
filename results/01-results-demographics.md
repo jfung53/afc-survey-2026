@@ -35,6 +35,10 @@ Total number of respondents
 
 ## Degrees and Certifications
 
+No response: 10 people
+
+---
+
 **Survey options**
 
 1. Bachelor’s degree in cartography/GIS/geography
@@ -101,11 +105,25 @@ Collapsed to highest level obtained
 
 
 
+## Multiple credentials
+
+I've only accounted for the highest degree attained, so if someone has a Master's I didn't count the Bachelor's.  But, maybe I should have, because those are all accomplishments in their own right!  I think the way I counted makes sense for the chart, though.  
+
+| number of credentials | N    | Percent |
+| --------------------- | ---- | ------- |
+| 0                     | 10   | 18.5%   |
+| 1                     | 25   | 46.3%   |
+| 2                     | 16   | 29.6%   |
+| 3                     | 1    | 1.9%    |
+| 4                     | 2    | 3.7%    |
+
 
 
 ---
 
+This chord diagram only shows co-occurrences because it was built on a pairwise matrix. There are **2** people with **4** credentials and **1** who holds **3**, and those are reflected here as pairs but not as a traceable 3 or 4 way connection.  It's a small number of respondents so I don't think it detracts too much from the overall message.  
 
+There is no delineation of degree levels (Bachelor's, Master's, Ph.D.) in the **adjacent** category, those could be anything, I suppose.  
 
 
 

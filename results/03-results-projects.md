@@ -6,7 +6,7 @@ No response: 4 people
 
 ---
 
-#### How many freelance cartography projects did you work on in the last year?
+### How many freelance cartography projects did you work on in the last year?
 
 *Feel free to give a close estimate if you don't want to count them up.*
 
@@ -37,7 +37,7 @@ I tried two histograms.
 
 
 
-#### In the last year, approximately how many projects did you work on for clients that belonged to each of these industries?
+### In the last year, approximately how many projects did you work on for clients that belonged to each of these industries?
 
 ---
 
@@ -53,7 +53,7 @@ Note: as stated above, maybe **resources** should have at least one entry from t
 
 
 
-#### Industry participation per respondent
+### Industry participation per respondent
 
 ---
 
@@ -67,7 +67,7 @@ Note: if we use both this one and the above chart, match the colour scales (they
 
 
 
-#### Are there industries that tend to be worked on by the same freelancers? 
+### Are there industries that tend to be worked on by the same freelancers? 
 
 ---
 
@@ -81,7 +81,7 @@ Not sure if we should include this one, it's only mildly interesting?
 
 
 
-#### If you answered "Other industries," what sorts of industries should we consider including in the list next time? 
+### If you answered "Other industries," what sorts of industries should we consider including in the list next time? 
 
 ---
 
@@ -102,7 +102,7 @@ Not sure if we should include this one, it's only mildly interesting?
 
 
 
-#### Do those who depend more on freelance for income tend to work across more or fewer industries? 
+### Do those who depend more on freelance for income tend to work across more or fewer industries? 
 
 ---
 
@@ -116,7 +116,7 @@ Spearman's rho correlation: p-value = `0.0001` :thumbsup:
 
 
 
-#### Is there a relationship between the number of projects and the level of dependence on freelance income? 
+### Is there a relationship between the number of projects and the level of dependence on freelance income? 
 
 ---
 
@@ -128,7 +128,7 @@ Spearman's rho test: p-value = `< 0.001` :thumbsup:
 
 
 
-#### Is there a relationship between the number of projects and typical hourly rate? 
+### Is there a relationship between the number of projects and typical hourly rate? 
 
 ---
 
@@ -140,7 +140,7 @@ Spearman's rho p-value = `0.05`  :confused:
 
 
 
-#### Do generalists (more distinct industries) earn a different rate than specialists (fewer industries)?
+### Do generalists (more distinct industries) earn a different rate than specialists (fewer industries)?
 
 ---
 
@@ -152,7 +152,7 @@ Spearman's rho: p-value `0.05` :thumbsdown:
 
 
 
-#### Which is more typical for you: to make static maps for your clients, or interactive/animated ones? 
+### Which is more typical for you: to make static maps for your clients, or interactive/animated ones? 
 
 ---
 
@@ -162,7 +162,7 @@ Spearman's rho: p-value `0.05` :thumbsdown:
 
 
 
-#### Is there a gender differences when it comes to who produces static vs interactive maps? 
+### Is there a gender differences when it comes to who produces static vs interactive maps? 
 
 ---
 

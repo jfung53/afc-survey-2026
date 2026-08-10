@@ -6,7 +6,7 @@ No response: 6 people
 
 ---
 
-#### During the last 12 months, how much money did you **typically** receive per hour of time spent on freelance mapmaking work?
+### During the last 12 months, how much money did you **typically** receive per hour of time spent on freelance mapmaking work?
 
 *Please enter an amount in US Dollars. Estimates are fine; get as close as you can. Whether you charge by the hour or by the project (or both), please estimate how much money a client usually paid for an hour of your time spent mapping.*
 
@@ -14,7 +14,7 @@ No response: 6 people
 
 
 
-#### Median hourly rate per year by gender
+### Median hourly rate per year by gender
 
 | Year |  All |  Men | Women |
 | ---: | ---: | ---: | ----: |
@@ -27,7 +27,7 @@ No response: 6 people
 
 
 
-#### Change in hourly rate compared to previous year, per respondent
+### Change in hourly rate compared to previous year, per respondent
 
 ---
 
@@ -44,7 +44,7 @@ During the year prior to that (i.e., the time span between 12 and 24 months ago)
 
 
 
-#### Rate by educational attainment
+### Rate by educational attainment
 
 ---
 
@@ -54,7 +54,7 @@ Probably not enough data points here for these numbers to be significant.
 
 
 
-#### Which of these options best describes you level of mapmaking experience?
+### Which of these options best describes you level of mapmaking experience?
 
 ---
 
@@ -62,9 +62,9 @@ Probably not enough data points here for these numbers to be significant.
 
 ![experience levels chart](../images/experience.svg)
 
-##### 
 
-#### Is there a relationship between experience and typical hourly rate?
+
+### Is there a relationship between experience and typical hourly rate?
 
 ---
 
@@ -76,7 +76,7 @@ Spearman's rho: p-value = `0.55` :thumbsdown:
 
 
 
-#### How often do you feel you are paid fairly for your time when doing freelance mapping? 
+### How often do you feel you are paid fairly for your time when doing freelance mapping? 
 
 ---
 
@@ -92,7 +92,7 @@ Spearman's rho: p-value = `0.55` :thumbsdown:
 
 
 
-#### Is there a relationship between rates and perception of getting paid fairly?
+### Is there a relationship between rates and perception of getting paid fairly?
 
 ---
 
@@ -110,7 +110,7 @@ Spearman's rho: p-value = `0.001`​ :thumbsup:
 
 
 
-#### Have the published results of previous versions of this survey influenced your business practices or rates?
+### Have the published results of previous versions of this survey influenced your business practices or rates?
 
 ---
 
@@ -123,7 +123,7 @@ Spearman's rho: p-value = `0.001`​ :thumbsup:
 
 ![influence of previous survey results](../images/influence.svg)
 
-#### If you answered "Yes" above, please optionally indicate how previous surveys influenced you.
+### If you answered "Yes" above, please optionally indicate how previous surveys influenced you.
 
 ---
 
@@ -167,7 +167,7 @@ In the last year, how much did you depend on your freelance cartography income?
 
 
 
-#### Is there a relationship between hourly rate and dependence on freelance income? 
+### Is there a relationship between hourly rate and dependence on freelance income? 
 
 ---
 
@@ -185,7 +185,7 @@ Spearman's rho: p-value = `0.04` :ok_hand:
 
 
 
-#### Are any of these patterns statistically significant?
+### Are any of these patterns statistically significant?
 
 ---
 

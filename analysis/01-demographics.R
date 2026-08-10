@@ -16,6 +16,18 @@ table(data$gender)
 # 9999        Man Non-binary      Woman
 #    2         34          4         14
 
+# percentage of each gender
+gender_pct <- data |>
+  count(gender) |>
+  mutate(pct = n / n_responses * 100)
+
+gender_pct
+#       gender  n       pct
+# 1       9999  2  3.703704
+# 2        Man 34 62.962963
+# 3 Non-binary  4  7.407407
+# 4      Woman 14 25.925926
+
 # chart of gender breakdown
 gender_distribution_plot <- ggplot(
   data,
@@ -247,7 +259,7 @@ degree_plus_certificate / n_responses * 100
 # 1. if someone has both a geo and adjacent degree, they're in the geo bucket
 # 2. if someone has both an adjacent degree and certificate(s) but no geo degree,
 #    they're in the adjacent bucket
-#
+
 # one person said "computer science", i added that as a geo-adjacent degree
 # one person said "some college", they were added to "none"
 

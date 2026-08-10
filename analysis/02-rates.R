@@ -239,6 +239,7 @@ ggsave(
   height = 4
 )
 
+
 # rate by experience
 # excludes the 6 respondents missing this year's rate
 rate_by_experience <- rate_2026 |>
@@ -292,6 +293,20 @@ ggsave(
   height = 4
 )
 
+# spearman's rho test
+cor.test(
+  as.numeric(rate_by_experience$experience),
+  rate_by_experience$rate,
+  method = "spearman"
+)
+# essentially no correlation, not statistically significant: in this
+# sample, rate does not track with experience level
+#
+# S = 16805, p-value = 0.5527
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+#        rho
+# 0.08785623
 
 # perception of fair pay
 table(data$perception.of.fair.pay)
@@ -381,6 +396,21 @@ ggsave(
   width = 6,
   height = 4
 )
+
+# spearman's rho test
+cor.test(
+  as.numeric(fair_pay_rate$fair_pay),
+  fair_pay_rate$rate,
+  method = "spearman"
+)
+# moderate, statistically significant negative correlation: respondents
+# who perceive fair pay less often tend to report lower rates
+#
+# S = 26830, p-value = 0.001116
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+#        rho
+# -0.4562761
 
 # perception of fair pay by gender
 # uses % within each gender rather than raw counts, since gender group
@@ -549,6 +579,21 @@ ggsave(
   height = 4
 )
 
+# spearman's rho test
+cor.test(
+  as.numeric(dependence_rate$dependence),
+  dependence_rate$rate,
+  method = "spearman"
+)
+# weak but statistically significant positive correlation: freelancers
+# who depend more on freelance income tend to report a higher rate
+#
+# S = 13051, p-value = 0.0443
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+#       rho
+# 0.2916458
+
 # billing method: flat rate vs hourly
 
 # 1 = always/almost always hourly,
@@ -670,3 +715,40 @@ ggsave(
   width = 8,
   height = 6
 )
+
+# spearman's rho test
+billing_dependence_indiv <- dependence |>
+  filter(hourly.or.flat.rate != 9999) |>
+  mutate(
+    billing = case_when(
+      hourly.or.flat.rate == 1 ~ "Always/almost always hourly",
+      hourly.or.flat.rate == 2 ~ "Usually hourly",
+      hourly.or.flat.rate == 3 ~ "About equally likely",
+      hourly.or.flat.rate == 4 ~ "Usually flat rate",
+      hourly.or.flat.rate == 5 ~ "Always/almost always flat rate"
+    ),
+    billing = factor(
+      billing,
+      levels = c(
+        "Always/almost always hourly",
+        "Usually hourly",
+        "About equally likely",
+        "Usually flat rate",
+        "Always/almost always flat rate"
+      )
+    )
+  )
+
+cor.test(
+  as.numeric(billing_dependence_indiv$dependence),
+  as.numeric(billing_dependence_indiv$billing),
+  method = "spearman"
+)
+# weak, not statistically significant -- confirms the chart above doesn't
+# show a real pattern, likely just noise from the small/sparse cells
+#
+# S = 24763, p-value = 0.3996
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+#        rho
+# -0.1204994

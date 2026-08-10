@@ -60,6 +60,18 @@ Probably not enough data points here for these numbers to be significant.
 
 *Estimate of the number of years you've spent doing mapmaking work (freelance or otherwise), taking into account whether that work was full time. If you were working part-time, studying, or working a job where you had significant non-mapmaking responsibilities, these would only count toward a portion of a full year of experience.*
 
+![experience levels chart](../images/experience.svg)
+
+##### 
+
+#### Is there a relationship between experience and typical hourly rate?
+
+---
+
+##### Not statistically significant.
+
+Spearman's rho: p-value = `0.55` :thumbsdown:
+
 ![rate by experience chart](../images/rate_by_experience.svg)
 
 
@@ -79,6 +91,16 @@ Probably not enough data points here for these numbers to be significant.
 ![](../images/fair_pay.svg)
 
 
+
+#### Is there a relationship between rates and perception of getting paid fairly?
+
+---
+
+##### Yes, there's a statistically significant correlation. 
+
+Those who feel they're not being paid fairly more often tend to report lower rates. 
+
+Spearman's rho: p-value = `0.001`​ :thumbsup:
 
 ![perception of fair pay by typical hourly rate](../images/fair_pay_rate.svg)
 
@@ -139,10 +161,38 @@ In the last year, how much did you depend on your freelance cartography income?
 | 4     | I did not depend on it at all; mapping provided surplus income | 20          |
 | 9999  | No response                                                  | 2           |
 
+
+
 ![dependence on freelance chart](../images/dependence.svg)
+
+
+
+#### Is there a relationship between hourly rate and dependence on freelance income? 
+
+---
+
+##### Maybe. Weak but statistically significant correlation.
+
+Freelancers who depend more on freelance income tend to report higher rates.
+
+Spearman's rho: p-value = `0.04` :ok_hand:
 
 ![rate by dependence on freelance chart](../images/dependence_rate.png)
 
+
+
 ![billing method](../images/billing_method.svg)
+
+
+
+#### Are any of these patterns statistically significant?
+
+---
+
+##### No. 
+
+There's no real pattern here, mostly noise. Data is too sparse, maybe.
+
+Spearman's rho: p-value = `0.3996` :thumbsdown:
 
 ![billing method by dependence on freelance](../images/billing_by_dependence.svg)

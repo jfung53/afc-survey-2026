@@ -47,6 +47,13 @@ project_dist_plot <- ggplot(projects, aes(x = projects)) +
 
 project_dist_plot
 
+ggsave(
+  "images/project_distribution.svg",
+  plot = project_dist_plot,
+  width = 6,
+  height = 4
+)
+
 # ------ number of projects by industry
 
 # each industry column is bucketed multiple-choice, not a raw count:
@@ -234,6 +241,21 @@ ggsave(
   width = 6,
   height = 4
 )
+
+# spearman's rho test
+cor.test(
+  as.numeric(dependence_projects$dependence),
+  dependence_projects$projects,
+  method = "spearman"
+)
+# strong, statistically significant correlation: freelancers who depend
+# more on freelance income take on more projects
+#
+# S = 8120.4, p-value = 2.559e-06
+# alternative hypothesis: true rho is not equal to 0
+# sample estimates:
+#       rho
+# 0.6100636
 
 # ------ static or interactive
 

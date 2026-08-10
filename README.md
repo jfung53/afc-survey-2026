@@ -4,13 +4,14 @@ Analysis of the 2026 [Alliance of Freelance Cartographers](https://www.freelance
 
 ---
 
-`00-setup.R` - libraries, load data, and count respondents
+Created using **R version:** 4.5.2
 
-`01-demographics.R` - gender, experience, degrees and certifications
-
-`02-rates.R` - typical hourly rates compared across demographics, dependence on freelance, billing methods, and influence of previous surveys on rates
-
-`03-projects.R` - new to 2026: number of projects, industries, static vs interactive
+| File | Description |
+| --- | --- |
+| `00-setup.R` | libraries, load data, and count respondents |
+| `01-demographics.R` | gender, experience, degrees and certifications |
+| `02-rates.R` | typical hourly rates compared across demographics, dependence on freelance, billing methods, and influence of previous surveys on rates |
+| `03-projects.R` | new to 2026: number of projects, industries, static vs interactive |
 
 ---
 

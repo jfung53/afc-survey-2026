@@ -59,9 +59,9 @@ Total number of respondents
 
 - one person said "some college", they were added to "none"
 
+---
 
-
-#### Respondents who hold any degree
+### Respondents who hold any degree
 
 Includes adjacent degrees not related to GIS/geography/cartography
 
@@ -69,7 +69,7 @@ Includes adjacent degrees not related to GIS/geography/cartography
 
 
 
-#### GIS/geography/cartography degrees (#1-3)
+### GIS/geography/cartography degrees (#1-3)
 
 Collapsed to highest level obtained
 
@@ -84,7 +84,7 @@ Collapsed to highest level obtained
 
 
 
-#### Other combinations
+### Other combinations
 
 | Credentials                                             | N    | Percent | Description                                           |
 | ------------------------------------------------------- | ---- | ------- | ----------------------------------------------------- |
@@ -97,13 +97,21 @@ Collapsed to highest level obtained
 
 
 
-#### Charts
+
+
+---
+
+### More charts
 
 ---
 
 ![degrees and certification holders chart](../images/degrees_and_certs_plot.svg)
 
 
+
+---
+
+This chord diagram shows the number of respondents, not percentages.
 
 
 

@@ -28,12 +28,12 @@ I tried two histograms.
 
 1. *Binwidth = 0*
 
-![number of projects](/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/images/project_distribution.svg)
+![number of projects](../images/project_distribution.svg)
 
 2. *Binwidth = 5*
    Honestly, I don't know if this grouping below works, I think the chart above is better but is a bit harder on the eyes. The chart below would need some more work on the x-axis tick labels, but it does provide a better idea of the curve at a glance. 
 
-![](/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/images/project_distribution_bin5.svg)
+![](../images/project_distribution_bin5.svg)
 
 
 
@@ -49,7 +49,7 @@ Note: as stated above, maybe **resources** should have at least one entry from t
 
 
 
-![projects per industry](/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/images/project_types.svg)
+![projects per industry](../images/project_types.svg)
 
 
 
@@ -63,7 +63,7 @@ Note: if we use both this one and the above chart, match the colour scales (they
 
 
 
-![heatmap of industry participation per person](/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/images/industry_heatmap.svg)
+![heatmap of industry participation per person](../images/industry_heatmap.svg)
 
 
 
@@ -124,7 +124,7 @@ Spearman's rho correlation: p-value = `0.0001` :thumbsup:
 
 Spearman's rho test: p-value = `< 0.001` :thumbsup:
 
-![](/Users/jocelyn/Documents/Pratt/Projects/afc-survey-2026/images/dependence_on_freelance.svg)
+![](../images/dependence_on_freelance.svg)
 
 
 

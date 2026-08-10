@@ -445,4 +445,41 @@ draw_degree_cert_chord()
 # save as svg
 svglite("images/degree_cert_chord.svg", width = 7, height = 7)
 draw_degree_cert_chord()
+
+# ----- # of credentials held per respondent
+
+# same 5 fields as the chord diagram above, but highest.geo.degree is
+# treated as a single yes/no credential
+credential_flags <- data |>
+  transmute(
+    id,
+    has_geo_degree = !is.na(highest.geo.degree),
+    has_adjacent_degree = !is.na(adjacent.degree),
+    has_certificate = !is.na(certificate),
+    has_gisp = !is.na(gisp),
+    has_other_certification = !is.na(other.certification)
+  )
+
+# claude says: NOTE: summing the already-computed logical columns with `+` (rather
+# than writing `!is.na(x) + !is.na(y) + ...` inline) sidesteps an R
+# precedence trap -- `!` binds looser than `+`, so `!is.na(a) + !is.na(b)`
+# actually parses as `!(is.na(a) + !is.na(b))`, not the sum of two flags
+credential_counts <- credential_flags |>
+  mutate(
+    n_credentials = has_geo_degree +
+      has_adjacent_degree +
+      has_certificate +
+      has_gisp +
+      has_other_certification
+  ) |>
+  select(id, n_credentials)
+
+# sanity check: should equal n_responses (54)
+nrow(credential_counts)
+
+credential_count_table <- credential_counts |>
+  count(n_credentials) |>
+  mutate(pct = round(n / sum(n) * 100, 1))
+
+credential_count_table
 dev.off()

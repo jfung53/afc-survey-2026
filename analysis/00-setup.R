@@ -29,3 +29,27 @@ respondents_by_year <- tibble(
   year = 2018:2026,
   n_respondents = c(85, NA, 56, NA, 74, NA, 94, 120, 54)
 )
+
+# chart: number of respondents by year
+respondents_by_year_plot <- ggplot(
+  respondents_by_year,
+  aes(x = year, y = n_respondents)
+) +
+  geom_col(fill = "steelblue", na.rm = TRUE) +
+  geom_point(color = "steelblue", na.rm = TRUE) +
+  scale_x_continuous(breaks = respondents_by_year$year) +
+  labs(
+    title = "Number of respondents by year",
+    x = NULL,
+    y = "# respondents"
+  ) +
+  theme_minimal()
+
+respondents_by_year_plot
+
+ggsave(
+  "images/respondents_by_year.svg",
+  plot = respondents_by_year_plot,
+  width = 6,
+  height = 4
+)

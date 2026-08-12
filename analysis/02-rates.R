@@ -73,7 +73,7 @@ rate_by_survey_year_plot <- ggplot(
   aes(x = year, y = median_hourly_rate, color = group)
 ) +
   geom_line() +
-  geom_point() +
+  geom_text(aes(label = median_hourly_rate), vjust = -0.8, show.legend = FALSE) +
   scale_x_continuous(
     breaks = survey_years,
     labels = \(x) ifelse(x %in% median_hourly_rate$year, x, ""),

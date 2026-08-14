@@ -237,6 +237,15 @@ avg_rate_increase <- rate_arrows |>
 # $13.38
 avg_rate_increase
 
+# # of respondents who increased their rate AND said previous survey
+# results influenced their business practices/rates
+n_increase_and_influenced <- rate_arrows |>
+  filter(rate > prev_rate, influence.of.previous.surveys == "Yes") |>
+  nrow()
+
+# 7 (out of 16 who increased), 43.7%
+n_increase_and_influenced
+
 
 # rate by education
 # mutually exclusive education categories, similar to the earlier

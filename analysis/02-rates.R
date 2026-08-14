@@ -73,7 +73,11 @@ rate_by_survey_year_plot <- ggplot(
   aes(x = year, y = median_hourly_rate, color = group)
 ) +
   geom_line() +
-  geom_text(aes(label = median_hourly_rate), vjust = -0.8, show.legend = FALSE) +
+  geom_text(
+    aes(label = median_hourly_rate),
+    vjust = -0.8,
+    show.legend = FALSE
+  ) +
   scale_x_continuous(
     breaks = survey_years,
     labels = \(x) ifelse(x %in% median_hourly_rate$year, x, ""),
@@ -105,11 +109,13 @@ ggsave(
 # - arrows show direction of change vs. previous year
 # - no change: keep the (filled) circle
 # - previous.typical.hourly.rate == 9999 (no response): outlined circle
+# - note: too much info
 gender_colors <- setNames(
   scales::hue_pal()(n_distinct(data$gender)),
   levels(fct_infreq(data$gender))
 )
-
+# this is me asking claude how to change the order of points
+#
 # NOTE: when several layers each supply their own filtered subset of the
 # same factor column, ggplot2's discrete position scale compacts levels
 # per layer rather than as one shared union, which silently breaks a
@@ -173,6 +179,64 @@ ggsave(
   width = 10,
   height = 5
 )
+
+# rate change summary: # and % who increased, decreased, or had no change
+# excludes the 8 respondents with no previous-year rate (change_type == "no_prev")
+rate_change_summary <- rate_arrows |>
+  filter(change_type != "no_prev") |>
+  mutate(
+    direction = case_when(
+      rate > prev_rate ~ "Increased",
+      rate < prev_rate ~ "Decreased",
+      TRUE ~ "No change"
+    ),
+    direction = factor(
+      direction,
+      levels = c("Increased", "No change", "Decreased")
+    )
+  ) |>
+  count(direction) |>
+  mutate(pct = n / sum(n) * 100)
+
+# sanity check: 16 increased, 22 no change, 2 decreased (sums to 40)
+rate_change_summary
+
+rate_change_summary_plot <- ggplot(
+  rate_change_summary,
+  aes(x = direction, y = n)
+) +
+  geom_col(fill = "steelblue") +
+  geom_text(
+    aes(label = paste0(n, " (", round(pct), "%)")),
+    vjust = -0.5
+  ) +
+  labs(
+    title = "Change in typical hourly rate vs. last year",
+    subtitle = "Excludes respondents with no previous-year rate",
+    x = NULL,
+    y = "# respondents"
+  ) +
+  theme_minimal()
+
+rate_change_summary_plot
+
+# save as svg
+ggsave(
+  "images/rate_change_summary.svg",
+  plot = rate_change_summary_plot,
+  width = 6,
+  height = 4
+)
+
+# calculate average increase amount, (ignores no change/decrease)
+avg_rate_increase <- rate_arrows |>
+  filter(rate > prev_rate) |>
+  summarise(avg_increase = mean(rate - prev_rate)) |>
+  pull(avg_increase)
+
+# $13.38
+avg_rate_increase
+
 
 # rate by education
 # mutually exclusive education categories, similar to the earlier

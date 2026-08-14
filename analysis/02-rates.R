@@ -201,20 +201,64 @@ rate_change_summary <- rate_arrows |>
 # sanity check: 16 increased, 22 no change, 2 decreased (sums to 40)
 rate_change_summary
 
-rate_change_summary_plot <- ggplot(
-  rate_change_summary,
-  aes(x = direction, y = n)
-) +
-  geom_col(fill = "steelblue") +
+# split the "increased" bar by whether previous survey results
+# influenced the respondent's business practices/rates
+rate_change_increased_split <- rate_arrows |>
+  filter(change_type != "no_prev", rate > prev_rate) |>
+  mutate(
+    direction = "Increased",
+    influenced = if_else(
+      influence.of.previous.surveys == "Yes",
+      "Influenced by previous survey",
+      "Not influenced by previous survey"
+    ),
+    influenced = factor(
+      influenced,
+      levels = c(
+        "Not influenced by previous survey",
+        "Influenced by previous survey"
+      )
+    )
+  ) |>
+  count(direction, influenced)
+
+# sanity check: 9 not influenced, 7 influenced (sums to 16)
+rate_change_increased_split
+
+rate_change_summary_plot <- ggplot() +
+  geom_col(
+    data = rate_change_summary,
+    aes(x = direction, y = n),
+    fill = "grey70"
+  ) +
+  geom_col(
+    data = rate_change_increased_split,
+    aes(x = direction, y = n, fill = influenced)
+  ) +
   geom_text(
-    aes(label = paste0(n, " (", round(pct), "%)")),
+    data = rate_change_increased_split,
+    aes(x = direction, y = n, label = n),
+    position = position_stack(vjust = 0.5),
+    color = "white",
+    size = 3
+  ) +
+  geom_text(
+    data = rate_change_summary,
+    aes(x = direction, y = n, label = paste0(n, " (", round(pct), "%)")),
     vjust = -0.5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Not influenced by previous survey" = "#a6c8e0",
+      "Influenced by previous survey" = "steelblue"
+    )
   ) +
   labs(
     title = "Change in typical hourly rate vs. last year",
-    subtitle = "Excludes respondents with no previous-year rate",
+    subtitle = "Excludes respondents with no previous-year rate; \"increased\" split by survey influence",
     x = NULL,
-    y = "# respondents"
+    y = "# respondents",
+    fill = NULL
   ) +
   theme_minimal()
 

@@ -352,6 +352,81 @@ ggsave(
   height = 10
 )
 
+# same data as project_types_plot, but bar length = # of respondents
+# instead of % within industry. CAVEAT: the # of valid (non-9999)
+# responses isn't constant across industries (36-48 out of 54) -- see
+# count(industry_projects, industry) above -- so unlike the % version,
+# differences in total bar length here partly reflect how many people
+# answered that industry's question, not purely how many are active in it
+project_types_by_respondent <- ggplot(
+  industry_summary,
+  aes(x = n, y = industry, fill = bucket)
+) +
+  geom_col(position = position_stack(reverse = TRUE)) +
+  scale_fill_brewer(palette = "Reds") +
+  labs(
+    title = "Project industries",
+    subtitle = "# of respondents per industry, past 12 months",
+    x = "# of respondents",
+    y = NULL,
+    fill = NULL
+  ) +
+  theme_minimal()
+
+project_types_by_respondent
+
+ggsave(
+  "images/project_types_by_respondent.svg",
+  plot = project_types_by_respondent,
+  width = 8,
+  height = 10
+)
+
+# ------ estimated project volume by industry
+
+# project_types_plot and project_types_by_respondent both show
+# respondent-level distributions (% or # of people in each bucket), not
+# actual project counts -- the buckets are ranges, not exact figures.
+# this converts each bucket to a numeric estimate (its midpoint) and
+# sums per industry to approximate total project volume.
+# "6+" is floored at 6 since there's no known upper bound, so totals for
+# industries with more "6+" respondents are undercounts, not exact
+bucket_midpoint <- c(
+  "None" = 0,
+  "1" = 1,
+  "2–3" = 2.5,
+  "4–5" = 4.5,
+  "6+" = 6
+)
+
+industry_volume <- industry_projects |>
+  mutate(estimate = bucket_midpoint[as.character(bucket)]) |>
+  summarise(total_projects = sum(estimate), .by = industry) |>
+  arrange(total_projects) |>
+  mutate(industry = factor(industry, levels = industry))
+
+project_volume_plot <- ggplot(
+  industry_volume,
+  aes(x = total_projects, y = industry)
+) +
+  geom_col(fill = "firebrick") +
+  labs(
+    title = "Estimated project volume by industry",
+    subtitle = "Bucket midpoints summed per industry; \"6+\" floored at 6, so totals are a lower bound",
+    x = "Estimated # of projects, past 12 months",
+    y = NULL
+  ) +
+  theme_minimal()
+
+project_volume_plot
+
+ggsave(
+  "images/project_volume_by_industry.svg",
+  plot = project_volume_plot,
+  width = 8,
+  height = 6
+)
+
 # ----- project types by gender
 # static vs. interactive by gender
 # --- note: because of the small numbers, the p-values are not reliable
